@@ -197,8 +197,8 @@ a {
   left: 0;
   top: 0;
   z-index: 8;
-  width: 96px;
-  height: 144px;
+  width: 120px;
+  height: 180px;
   transform-origin: 50% 55%;
   filter:
     drop-shadow(0 0 calc(6px + var(--glow) * 24px) rgb(103 232 249 / 0.85))
@@ -208,76 +208,44 @@ a {
 
 .spawn-fall {
   position: relative;
-  width: 96px;
-  height: 144px;
+  width: 120px;
+  height: 180px;
   transform: translateY(-78vh);
   animation: hero-enter 2.65s steps(12, end) 0.55s forwards;
 }
 
-.pixel-devra {
-  --pixel: calc(8px + var(--evolution) * 4px);
+.sprite-somersault-wrapper {
   position: absolute;
   left: 50%;
   top: 50%;
-  display: grid;
-  grid-template-columns: repeat(8, var(--pixel));
-  grid-template-rows: repeat(12, var(--pixel));
-  width: calc(var(--pixel) * 8);
-  height: calc(var(--pixel) * 12);
-  transform: translate(-50%, -50%);
-  image-rendering: pixelated;
-}
-
-.pixel-devra.landed {
-  transform: translate(-50%, -44%) rotate(-10deg) skewX(-8deg);
-}
-
-.px {
-  width: var(--pixel);
-  height: var(--pixel);
-}
-
-.px-empty {
-  opacity: 0;
-}
-
-.px-h {
-  background: #26130d;
-}
-
-.px-s {
-  background: #f0b37f;
-}
-
-.px-e,
-.px-d {
-  background: #050505;
-}
-
-.px-t {
-  background: #2dd4bf;
-}
-
-.px-p {
-  background: #2563eb;
-}
-
-.hero-portrait {
-  position: absolute;
-  left: 50%;
-  top: 48%;
   width: 120px;
+  height: 180px;
+  transform-origin: 50% 50%;
+  transform: translate(-50%, -50%);
+}
+
+.sprite-character {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.devra-sprite {
+  width: 120px;
+  height: 180px;
+}
+
+.footer-sprite-wrapper {
+  margin: 24px auto;
+  width: 100px;
   height: 150px;
-  opacity: calc(var(--evolution) * 0.85);
-  transform: translate(-50%, -50%) scale(calc(0.7 + var(--evolution) * 0.7));
-  border-radius: 44% 44% 36% 36%;
-  background:
-    radial-gradient(circle at 38% 38%, #111 0 4px, transparent 5px),
-    radial-gradient(circle at 62% 38%, #111 0 4px, transparent 5px),
-    linear-gradient(120deg, #24150f 0 28%, transparent 29%),
-    linear-gradient(#f6c59b 0 52%, #0f172a 53%);
-  box-shadow: 0 0 60px rgb(255 255 255 / 0.45);
-  pointer-events: none;
+  transform-origin: 50% 50%;
+  transition: transform 80ms linear;
+}
+
+.footer-sprite {
+  width: 100px;
+  height: 150px;
 }
 
 .pixel-trail {
@@ -615,12 +583,28 @@ a {
   }
 
   .devra-rig {
-    width: 72px;
-    height: 108px;
+    width: 90px;
+    height: 135px;
   }
 
-  .pixel-devra {
-    --pixel: calc(6px + var(--evolution) * 3px);
+  .sprite-somersault-wrapper {
+    width: 90px;
+    height: 135px;
+  }
+
+  .devra-sprite {
+    width: 90px;
+    height: 135px;
+  }
+
+  .footer-sprite-wrapper {
+    width: 80px;
+    height: 120px;
+  }
+
+  .footer-sprite {
+    width: 80px;
+    height: 120px;
   }
 }
 

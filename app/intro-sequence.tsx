@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
+import { SpriteCharacter, type AnimState } from "./sprite-character";
 
 type Side = "left" | "right";
 type ChapterId =
@@ -31,6 +32,10 @@ type Motion = {
   evolution: number;
   landed: boolean;
   world: ChapterId | "void" | "build" | "impact" | "reveal";
+  anim: AnimState;
+  flipX: boolean;
+  somersault: number; // 0-1 normalized for somersault rotation
+  animProgress: number; // 0-1 progress within the current animation segment
 };
 
 type CSSVars = CSSProperties & Record<`--${string}`, string | number>;
@@ -106,21 +111,6 @@ const routes: Route[] = [
   { start: 0.72, end: 0.84, from: "left", to: "right", world: "blogs", rotation: 2700 },
 ];
 
-const pixels = [
-  "..HHHH..",
-  ".HHHHHH.",
-  ".HSSSSH.",
-  ".SSEESS.",
-  ".SSSSSS.",
-  "..TTTT..",
-  ".TTTTTT.",
-  "STTTTTS",
-  "..TTTT..",
-  "..PPPP..",
-  "..P..P..",
-  "..D..D..",
-];
-
 const finalWords = ["Storyteller.", "Creator.", "Performer.", "Strategist."];
 
 function clamp(value: number, min = 0, max = 1) {
@@ -168,6 +158,10 @@ function rectRoute(progress: number, route: Route) {
       y: mix(14, 82, drop),
       rotation: mix(route.rotation, route.rotation + 300, drop),
       world: route.world,
+      anim: "fall" as AnimState,
+      flipX: route.to === "left",
+      somersault: drop, // Somersault during fall
+      animProgress: drop,
     };
   }
 
@@ -178,6 +172,10 @@ function rectRoute(progress: number, route: Route) {
     y: 82,
     rotation: mix(route.rotation + 300, route.rotation + 540, traverse),
     world: route.world,
+    anim: "run" as AnimState,
+    flipX: route.to === "left",
+    somersault: 0,
+    animProgress: traverse,
   };
 }
 
@@ -187,6 +185,10 @@ function getMotion(progress: number): Motion {
   let rotation = 0;
   let scale = 1;
   let world: Motion["world"] = "void";
+  let anim: AnimState = "idle";
+  let flipX = false;
+  let somersault = 0;
+  let animProgress = 0;
   const activeRoute = routes.find((route) => progress >= route.start && progress < route.end);
 
   if (activeRoute) {
@@ -195,6 +197,10 @@ function getMotion(progress: number): Motion {
     y = routeMotion.y;
     rotation = routeMotion.rotation;
     world = routeMotion.world;
+    anim = routeMotion.anim;
+    flipX = routeMotion.flipX;
+    somersault = routeMotion.somersault;
+    animProgress = routeMotion.animProgress;
   } else if (progress < 0.9) {
     const t = ease(segment(progress, 0.84, 0.9));
     x = mix(sideX("right"), 50, t);
@@ -202,6 +208,9 @@ function getMotion(progress: number): Motion {
     rotation = mix(3240, 3600, t);
     scale = mix(1.05, 1.45, t);
     world = "build";
+    anim = "jump";
+    somersault = t;
+    animProgress = t;
   } else if (progress < 0.955) {
     const t = ease(segment(progress, 0.9, 0.955));
     x = 50;
@@ -209,6 +218,9 @@ function getMotion(progress: number): Motion {
     rotation = mix(3120, 3600, t);
     scale = mix(1.45, 1.25, t);
     world = "impact";
+    anim = "fall";
+    somersault = t;
+    animProgress = t;
   } else {
     const t = ease(segment(progress, 0.955, 1));
     x = 50;
@@ -216,6 +228,17 @@ function getMotion(progress: number): Motion {
     rotation = 3600;
     scale = mix(1.25, 2.4, t);
     world = "reveal";
+    anim = "fun";
+    somersault = 0;
+    animProgress = t;
+  }
+
+  // Hero section somersault: during the initial void entry (0 to 0.08)
+  if (progress < 0.08) {
+    const heroSomersaultT = ease(segment(progress, 0, 0.08));
+    somersault = heroSomersaultT;
+    anim = "jump";
+    animProgress = heroSomersaultT;
   }
 
   return {
@@ -227,6 +250,10 @@ function getMotion(progress: number): Motion {
     evolution: ease(segment(progress, 0.82, 0.965)),
     landed: progress > 0.925 && progress < 0.965,
     world,
+    anim,
+    flipX,
+    somersault,
+    animProgress,
   };
 }
 
@@ -236,6 +263,9 @@ export function IntroSequence() {
   const reveal = ease(segment(progress, 0.955, 1));
   const impact = ease(segment(progress, 0.91, 0.95)) * (1 - ease(segment(progress, 0.955, 0.985)));
   const build = ease(segment(progress, 0.79, 0.9)) * (1 - ease(segment(progress, 0.93, 0.96)));
+
+  // Determine somersault rotation (one full 360° flip)
+  const somersaultRotation = motion.somersault * 360;
 
   useEffect(() => {
     let frame = 0;
@@ -286,11 +316,24 @@ export function IntroSequence() {
         <div
           className="devra-rig"
           style={{
-            transform: `translate3d(${motion.x}vw, ${motion.y}vh, 0) translate(-50%, -50%) rotate(${motion.rotation}deg) scale(${motion.scale})`,
+            transform: `translate3d(${motion.x}vw, ${motion.y}vh, 0) translate(-50%, -50%) scale(${motion.scale})`,
           }}
         >
           <div className="spawn-fall">
-            <PixelDevra landed={motion.landed} evolution={motion.evolution} />
+            <div
+              className="sprite-somersault-wrapper"
+              style={{
+                transform: `rotate(${somersaultRotation}deg)`,
+                transition: "transform 80ms linear",
+              }}
+            >
+              <SpriteCharacter
+                anim={motion.anim}
+                flipX={motion.flipX}
+                progressFrame={motion.animProgress}
+                className="devra-sprite"
+              />
+            </div>
             <Trail />
           </div>
         </div>
@@ -301,7 +344,7 @@ export function IntroSequence() {
 
         <BuildUp progress={progress} />
         <ImpactFlash />
-        <TransformationReveal reveal={reveal} />
+        <TransformationReveal reveal={reveal} progress={progress} />
       </div>
     </main>
   );
@@ -313,26 +356,6 @@ function VoidSpawn() {
       {Array.from({ length: 26 }).map((_, index) => (
         <i key={`spawn-${index}`} style={vars({ "--i": index })} />
       ))}
-    </div>
-  );
-}
-
-function PixelDevra({ landed, evolution }: { landed: boolean; evolution: number }) {
-  return (
-    <div
-      className={`pixel-devra ${landed ? "landed" : ""}`}
-      style={vars({ "--evolution": evolution })}
-      aria-label="Pixel Devra"
-    >
-      {pixels.flatMap((row, y) =>
-        row.split("").map((cell, x) => (
-          <span
-            key={`${x}-${y}`}
-            className={`px px-${cell === "." ? "empty" : cell.toLowerCase()}`}
-          />
-        )),
-      )}
-      <b className="hero-portrait" aria-hidden="true" />
     </div>
   );
 }
@@ -410,7 +433,11 @@ function ImpactFlash() {
   );
 }
 
-function TransformationReveal({ reveal }: { reveal: number }) {
+function TransformationReveal({ reveal, progress }: { reveal: number; progress: number }) {
+  // Footer somersault: sprite does a flip in the final reveal
+  const footerSomersault = ease(segment(progress, 0.965, 0.995));
+  const footerRotation = footerSomersault * 360;
+
   return (
     <div
       className="final-reveal"
@@ -426,6 +453,21 @@ function TransformationReveal({ reveal }: { reveal: number }) {
           </span>
         ))}
       </h1>
+
+      {/* Footer somersault character */}
+      <div
+        className="footer-sprite-wrapper"
+        style={{
+          transform: `rotate(${footerRotation}deg)`,
+        }}
+      >
+        <SpriteCharacter
+          anim="fun"
+          progressFrame={footerSomersault}
+          className="footer-sprite"
+        />
+      </div>
+
       <p>
         {finalWords.map((word) => (
           <span key={word}>{word}</span>
