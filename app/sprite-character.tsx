@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import Image from "next/image";
 
 export type AnimState = "idle" | "run" | "jump" | "fall" | "fun" | "walk" | "hit" | "somersault";
@@ -46,12 +45,6 @@ export function SpriteCharacter({
   progressFrame = 0,
 }: SpriteCharacterProps) {
   const totalFrames = FRAME_COUNTS[anim];
-  const prevAnimRef = useRef(anim);
-
-  // When anim changes, reset to frame 0
-  if (prevAnimRef.current !== anim) {
-    prevAnimRef.current = anim;
-  }
 
   // Pick frame from progress (0→1 maps to frame 0→last)
   const displayFrame = Math.min(

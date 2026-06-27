@@ -159,9 +159,9 @@ function rectRoute(progress: number, route: Route) {
       y: mix(14, 82, drop),
       rotation: mix(route.rotation, route.rotation + 300, drop),
       world: route.world,
-      anim: "somersault" as AnimState,
+      anim: "fall" as AnimState,
       flipX: route.to === "left",
-      somersault: drop, // Somersault during fall
+      somersault: 0,
       animProgress: drop,
     };
   }
@@ -210,7 +210,7 @@ function getMotion(progress: number): Motion {
     scale = mix(1.05, 1.45, t);
     world = "build";
     anim = "jump";
-    somersault = t;
+    somersault = 0;
     animProgress = t;
   } else if (progress < 0.955) {
     const t = ease(segment(progress, 0.9, 0.955));
@@ -219,8 +219,8 @@ function getMotion(progress: number): Motion {
     rotation = mix(3120, 3600, t);
     scale = mix(1.25, 1.25, t);
     world = "impact";
-    anim = "somersault";
-    somersault = t;
+    anim = "fall";
+    somersault = 0;
     animProgress = t;
   } else {
     const t = ease(segment(progress, 0.955, 1));
@@ -234,11 +234,11 @@ function getMotion(progress: number): Motion {
     animProgress = t;
   }
 
-  // Hero section somersault: during the initial void entry (0 to 0.08)
+  // Hero section falling: during the initial void entry (0 to 0.08)
   if (progress < 0.08) {
     const heroSomersaultT = ease(segment(progress, 0, 0.08));
-    somersault = heroSomersaultT;
-    anim = "somersault";
+    somersault = 0;
+    anim = "fall";
     animProgress = heroSomersaultT;
   }
 
@@ -436,9 +436,10 @@ function ImpactFlash() {
 }
 
 function TransformationReveal({ reveal, progress }: { reveal: number; progress: number }) {
-  // Footer somersault: sprite does a flip in the final reveal
+  // Footer somersault: sprite does a somersault flip in horizontal motion on the last page
   const footerSomersault = ease(segment(progress, 0.965, 0.995));
   const footerRotation = footerSomersault * 360;
+  const horizontalX = mix(-35, 35, footerSomersault); // Horizontal sweep across the viewport
 
   return (
     <div
@@ -456,15 +457,15 @@ function TransformationReveal({ reveal, progress }: { reveal: number; progress: 
         ))}
       </h1>
 
-      {/* Footer somersault character */}
+      {/* Footer somersault character in horizontal motion */}
       <div
         className="footer-sprite-wrapper"
         style={{
-          transform: `rotate(${footerRotation}deg)`,
+          transform: `translate3d(${horizontalX}vw, 0, 0) rotate(${footerRotation}deg)`,
         }}
       >
         <SpriteCharacter
-          anim="fun"
+          anim="somersault"
           progressFrame={footerSomersault}
           className="footer-sprite"
         />
