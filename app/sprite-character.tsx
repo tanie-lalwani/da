@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import Image from "next/image";
 
-export type AnimState = "idle" | "run" | "jump" | "fall" | "fun" | "walk" | "hit";
+export type AnimState = "idle" | "run" | "jump" | "fall" | "fun" | "walk" | "hit" | "somersault";
 
 /**
  * Frame counts for each animation.
@@ -17,6 +17,7 @@ const FRAME_COUNTS: Record<AnimState, number> = {
   fun: 4,
   walk: 4,
   hit: 4,
+  somersault: 8,
 };
 
 function getFramePath(anim: AnimState, frame: number): string {

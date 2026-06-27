@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
 import { SpriteCharacter, type AnimState } from "./sprite-character";
+import { UnityModal } from "./unity-modal";
 
 type Side = "left" | "right";
 type ChapterId =
@@ -158,7 +159,7 @@ function rectRoute(progress: number, route: Route) {
       y: mix(14, 82, drop),
       rotation: mix(route.rotation, route.rotation + 300, drop),
       world: route.world,
-      anim: "fall" as AnimState,
+      anim: "somersault" as AnimState,
       flipX: route.to === "left",
       somersault: drop, // Somersault during fall
       animProgress: drop,
@@ -216,9 +217,9 @@ function getMotion(progress: number): Motion {
     x = 50;
     y = mix(42, 79, t);
     rotation = mix(3120, 3600, t);
-    scale = mix(1.45, 1.25, t);
+    scale = mix(1.25, 1.25, t);
     world = "impact";
-    anim = "fall";
+    anim = "somersault";
     somersault = t;
     animProgress = t;
   } else {
@@ -237,7 +238,7 @@ function getMotion(progress: number): Motion {
   if (progress < 0.08) {
     const heroSomersaultT = ease(segment(progress, 0, 0.08));
     somersault = heroSomersaultT;
-    anim = "jump";
+    anim = "somersault";
     animProgress = heroSomersaultT;
   }
 
@@ -346,6 +347,7 @@ export function IntroSequence() {
         <ImpactFlash />
         <TransformationReveal reveal={reveal} progress={progress} />
       </div>
+      <UnityModal />
     </main>
   );
 }
