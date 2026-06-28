@@ -318,6 +318,9 @@ export function IntroSequence() {
           className="devra-rig"
           style={{
             transform: `translate3d(${motion.x}vw, ${motion.y}vh, 0) translate(-50%, -50%) scale(${motion.scale})`,
+            opacity: motion.world === "reveal" ? 0 : 1,
+            pointerEvents: motion.world === "reveal" ? "none" : "auto",
+            transition: "opacity 200ms ease",
           }}
         >
           <div className="spawn-fall">
@@ -461,7 +464,7 @@ function TransformationReveal({ reveal, progress }: { reveal: number; progress: 
       <div
         className="footer-sprite-wrapper"
         style={{
-          transform: `translate3d(${horizontalX}vw, 0, 0) rotate(${footerRotation}deg)`,
+          transform: `translate3d(${horizontalX}vw, 0, 0)`,
         }}
       >
         <SpriteCharacter
